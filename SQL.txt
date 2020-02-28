@@ -1,0 +1,138 @@
+--1:Afisarea studentilor si notele la fiecare materie
+SELECT nume,nota,denum_materie
+FROM studenti
+JOIN note
+USING(id_student)
+JOIN materii
+USING(id_materie);
+
+--2:Calcularea mediei notelor pentru fiecare materie
+SELECT denum_materie, AVG(nota)
+FROM materii
+JOIN note
+USING(id_materie)
+GROUP BY(denum_materie);
+
+--3:Calcularea mediei notelor in functie de grupa
+SELECT nr_grupa, AVG(nota)
+FROM grupe
+JOIN studenti
+USING (id_grupa)
+JOIN note
+USING (id_student)
+GROUP BY nr_grupa
+HAVING AVG(nota) > 5;
+
+--4:Afisarea oraselor si a numarului de studenti care provin de acolo
+SELECT denum_loc,COUNT(studenti.nume)
+FROM studenti
+RIGHT JOIN localitati
+USING (id_localitate)
+GROUP BY(denum_loc)
+ORDER BY COUNT(studenti.nume) DESC;
+
+--5:Afisarea studentilor impreuna cu plata si data la care a fost efectuata
+SELECT studenti.nume,plati.suma,TO_CHAR(data_platii,'DD/MM/YYYY')
+FROM studenti
+JOIN plati
+USING(id_student)
+WHERE TO_CHAR(data_platii,'YYYY')='2019';
+
+--6:Afisarea burselor a tuturor studentilor
+SELECT studenti.nume,NVL(denum_bursa,'Nu are bursa'),NVL(tip_bursa.suma,'0')
+FROM studenti
+LEFT JOIN tip_bursa
+USING(id_tip_bursa);
+
+--7:Modificarea burselor pe parcusul anului in functie de notele studentilor
+SELECT studenti.nume, denum_bursa,tip_bursa.suma "Suma initiala",
+CASE 
+WHEN nota BETWEEN 9 AND 10 THEN tip_bursa.suma+200
+WHEN nota BETWEEN 4 AND 6 THEN tip_bursa.suma-200
+ELSE tip_bursa.suma
+END "Burse modificate"
+FROM note
+JOIN studenti
+USING(id_student)
+JOIN tip_bursa
+USING(id_tip_bursa);
+
+--8:Afisarea primilor 5 studenti cu notele cele mai bune
+SELECT studenti.nume
+FROM studenti
+JOIN (
+      SELECT *
+      FROM note
+      ORDER BY nota DESC
+      )
+USING(id_student)
+WHERE rownum <= 5;
+
+--9:Afisarea profesorilor angajati intre anii 2000 si 2010
+SELECT profesori.nume, data_angajare
+FROM profesori
+WHERE TO_CHAR(data_angajare,'YYYY') BETWEEN '2000' AND '2010'
+ORDER BY data_angajare;
+
+--10:Afisarea studentilor care incep cu litera 'a' sau 's' si a celor care au a treia litera 'a'
+SELECT UPPER(studenti.nume), LENGTH(studenti.nume)
+FROM studenti
+WHERE SUBSTR(LOWER(TRIM(studenti.nume)),1,1)='a'
+OR SUBSTR(LOWER(TRIM(studenti.nume)),1,1)='s'
+OR SUBSTR(LOWER(TRIM(studenti.nume)),3,1)='a';
+
+--11:Afisarea profesorilor in functie de vechimea lor
+SELECT profesori.nume,ROUND(SYSDATE-data_angajare) Vechime
+FROM profesori
+ORDER BY ROUND(SYSDATE-data_angajare) DESC;
+
+--12:Afisarea grupei si specializarea unui student si taxa anuala pe care o plateste
+SELECT studenti.nume, nr_grupa, den_spec, DECODE(bugetat,'NU',taxa,0) Taxa
+FROM studenti
+JOIN grupe
+USING(id_grupa)
+JOIN anistudiu
+USING(id_an_studiu)
+JOIN specializari
+USING(id_spec)
+ORDER BY studenti.nume;
+
+--13:Stabilirea studentilor promovati sau picati la materiile sustinute
+SELECT studenti.nume, nota, denum_materie,
+CASE
+    WHEN nota <=4 THEN 'Picat'
+    ELSE 'Promovat' 
+    END Promovabilitate
+FROM studenti
+JOIN note
+USING(id_student)
+JOIN materii
+USING(id_materie);
+
+--14:Ordonarea grupelor dupa suma burselor obtinute
+SELECT nr_grupa,NVL(SUM(tip_bursa.suma),0)
+FROM grupe
+JOIN studenti
+USING(id_grupa)
+LEFT JOIN tip_bursa
+USING(id_tip_bursa)
+GROUP BY nr_grupa
+ORDER BY NVL(SUM(tip_bursa.suma),0) DESC;
+
+--15:Afisarea tipurilor de ore sustinute de profesori, precum si sala si etajul unde sunt ele
+SELECT denum_sala, tip, etaj, profesori.nume
+FROM sali
+JOIN predare
+USING(id_sala)
+JOIN profesori
+USING(id_profesor);
+
+--16:Afisarea studentilor, grupa lor, materiile la care participa si profesorul de la acea materie
+SELECT  studenti.nume, nr_grupa, profesori.nume, denum_materie
+FROM studenti
+JOIN grupe ON studenti.id_grupa = grupe.id_grupa
+JOIN grupe_predare ON grupe.id_grupa = grupe_predare.id_grupa
+JOIN predare ON grupe_predare.id_predare = predare.id_predare
+JOIN profesori ON predare.id_profesor = profesori.id_profesor
+JOIN materii ON materii.id_materie = predare.id_materie
+ORDER BY studenti.nume;

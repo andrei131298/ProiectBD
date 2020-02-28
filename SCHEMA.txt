@@ -1,0 +1,125 @@
+insert into specializari values(&id_spec,'&den_spec','&form_spec',&nr_ani_studiu,&taxa);
+insert into anistudiu values(&id_an_studiu,&an_studiu,&id_spec);
+insert into grupe(id_an_studiu,nr_grupa) values(&id_an_studiu,&nr_grupa);
+insert into studenti(nume,cnp,sex,nr_legitim,bugetat,id_grupa,id_tip_bursa,id_localitate) values('&nume',&cnp,'&sex',&nr_legitim,'&bugetat',&id_grupa,&id_tip_bursa,&id_localitate);
+insert into tip_bursa(denum_bursa,suma) values('&denum_bursa',&suma);
+insert into localitati(denum_loc,id_judet) values('&denum_loc',&id_judet);
+insert into judete(denum_judet) values('&denum_judet');
+insert into plati(data_platii,suma,id_student) values(TO_DATE('&data_platii', 'DD/MM/YYYY'),&suma,&id_student);
+insert into note(data,nota,id_materie,id_student) values(TO_DATE('&data', 'DD/MM/YYYY'),&nota,&id_materie,&id_student);
+insert into materii(denum_materie) values('&denum_materie');
+insert into profesori(data_angajare) values(TO_DATE('&data_angajarii', 'DD/MM/YYYY'));
+insert into sali(denum_sala,etaj) values('&denum_sala',&etaj);
+insert into predare(tip,id_profesor,id_sala,id_materie) values('&tip',&id_profesor,&id_sala,&id_materie);
+insert into grupe_predare(id_grupa,id_predare) values(&id_grupa,&id_predare);
+
+
+CREATE TABLE anistudiu(
+    id_an_studiu INT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+    an_studiu number(20),
+    id_spec number(20),
+    FOREIGN KEY (id_spec) REFERENCES specializari(id_spec)
+);
+
+CREATE TABLE specializari(
+    id_spec INT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+    den_spec VARCHAR(20),
+    form_studiu VARCHAR(20),
+    nr_ani_studiu number(20),
+    taxa number(20)
+);
+
+CREATE TABLE grupe(
+    id_grupa INT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+    id_an_studiu number(20),
+    nr_grupa number(20),
+    FOREIGN KEY (id_an_studiu) REFERENCES anistudiu(id_an_studiu)
+);
+
+CREATE TABLE studenti (
+    id_student INT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+    nume VARCHAR(20),
+    prenume VARCHAR(20),
+    CNP number(20),
+    sex VARCHAR(20),
+    nr_legitim number(20),
+    bugetat varchar(20),
+    id_grupa number(20),
+    id_tip_bursa number(20),
+    id_localitate number(20),
+    FOREIGN KEY (id_grupa) REFERENCES grupe(id_grupa),
+    FOREIGN KEY (id_tip_bursa) REFERENCES tip_bursa(id_tip_bursa),
+    FOREIGN KEY (id_localitate) REFERENCES localitati(id_localitate)
+);
+
+CREATE TABLE tip_bursa (
+    id_tip_bursa INT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+    denum_bursa VARCHAR(20),
+    suma number(20)
+);
+
+CREATE TABLE judete (
+    id_judet INT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+    denum_judet VARCHAR(20)
+);
+
+CREATE TABLE localitati (
+    id_lcoalitate INT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+    denum_loc VARCHAR(20),
+    id_judet number(20),
+    FOREIGN KEY (id_judet) REFERENCES judete(id_judet)
+);
+
+CREATE TABLE plati (
+    id_plata INT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+    data_platii Date,
+    suma number(20),
+    id_student NUMBER(20),
+    FOREIGN KEY (id_student) REFERENCES studenti(id_student)
+);
+
+CREATE TABLE note (
+    id_nota INT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+    data date,
+    nota number(20),
+    id_materie Number(20),
+    id_student Number(20),
+    FOREIGN KEY (id_student) REFERENCES studenti(id_student),
+    FOREIGN KEY (id_materie) REFERENCES materii(id_materie)
+);
+
+CREATE TABLE materii (
+    id_materie INT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+    denum_materie VARCHAR(20)
+);
+
+CREATE TABLE sali (
+    id_sala INT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+    denum_sala VARCHAR(20),
+    etaj Number(20)
+);
+
+CREATE TABLE profesori (
+    id_profesor INT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+    nume VARCHAR(20),
+    titlu Varchar(20)
+);
+
+CREATE TABLE predare (
+    id_predare INT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+    tip VARCHAR(20),
+    id_profesor number(20),
+    id_sala Number(20),
+    id_materie number(20),
+    FOREIGN KEY (id_profesor) REFERENCES profesori(id_profesor),
+    FOREIGN KEY (id_sala) REFERENCES sali(id_sala),
+    FOREIGN KEY (id_materie) REFERENCES materii(id_materie)
+);
+
+CREATE TABLE grupe_predare (
+    id_gp INT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+    id_grupa number(20),
+    id_predare Number(20),
+    FOREIGN KEY (id_grupa) REFERENCES grupe(id_grupa),
+    FOREIGN KEY (id_predare) REFERENCES predare(id_predare)
+);
